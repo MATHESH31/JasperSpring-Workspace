@@ -1,15 +1,13 @@
 package com.jasper.pilot.handler;
 
-import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,12 +18,13 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 import com.jasper.pilot.projection.UserData;
 
-import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -35,63 +34,75 @@ public class JasperHandler {
 	@Autowired
 	ReactiveMongoTemplate reactiveMongoTemplate;
 
+	final DefaultDataBufferFactory bufferFactory = new DefaultDataBufferFactory();
+
 	public Mono<ServerResponse> data(ServerRequest request) {
 		Flux<UserData> user = reactiveMongoTemplate.findAll(UserData.class);
 		return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(user, UserData.class);
 	}
 
 	public Mono<ServerResponse> generateReport(ServerRequest request) {
-		Flux<UserData> users = reactiveMongoTemplate.findAll(UserData.class);
+		Mono<List<UserData>> users = reactiveMongoTemplate.findAll(UserData.class).collectList();
 
 		int fromYear = Integer.parseInt(request.queryParam("fromYear").orElse(""));
 		int toYear = Integer.parseInt(request.queryParam("toYear").orElse(""));
 
-		return users.collectList().flatMap(user -> {
-			try {
-				byte[] pdfBytes = JasperReportPdfGenerator.generatePdfFromTemplate(user, fromYear, toYear);
+//		try {
+//			InputStream reportInputStream = getClass().getResourceAsStream("/jrxmlTemplates/Sample.jrxml");
+//			JasperReport jasperReport = JasperCompileManager.compileReport(reportInputStream);
+//			
+//			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(users.collectList().block());
+//			
+//			Map<String,Object> parameters = new HashMap<>();
+//			parameters.put("fromYear", fromYear);
+//			parameters.put("toYear", toYear);
+//			parameters.put("dataSource", dataSource);
+//			
+//			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+//			
+//			FileOutputStream pdfFileOutputStream = new FileOutputStream("/generatedReports/UserDetails.pdf");
+//			JasperExportManager.exportReportToPdfStream(jasperPrint,pdfFileOutputStream);
+//			
+//			pdfFileOutputStream.close();
+//			reportInputStream.close();
+//	
+//			FileSystemResource resource = new FileSystemResource("/generatedReports/UserDetails.pdf");
+//			
+//			return ServerResponse.ok().contentType(MediaType.APPLICATION_PDF).body(BodyInserters.fromResource(resource));
+//		} 
+		try {
+			InputStream reportInputStream = getClass().getResourceAsStream("/jrxmlTemplates/Sample.jrxml");
+			JasperReport jasperReport = JasperCompileManager.compileReport(reportInputStream);
 
-				Path pdfPath = Paths.get("/generatedReports/UserDetails.pdf");
-				Files.write(pdfPath, pdfBytes);
+			return users.flatMap(user -> {
+				JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(user);
 
-				return ServerResponse.ok().contentType(MediaType.APPLICATION_PDF)
-						.body(BodyInserters.fromValue(pdfBytes));
-			} catch (JRException jre) {
-				jre.printStackTrace();
-				return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-			} catch (IOException e) {
-				return ServerResponse.status(HttpStatus.CONFLICT).build();
-			}
-		});
-	}
+				Map<String, Object> parameters = new HashMap<>();
+				parameters.put("fromYear", fromYear);
+				parameters.put("toYear", toYear);
 
-	public class JasperReportPdfGenerator {
-		public static byte[] generatePdfFromTemplate(List<UserData> userDetails, int fromYear, int toYear)
-				throws JRException {
-			
-			String jrxmlFile = "pilot/src/main/resources/jrxmlTemplates/Sample.jrxml";
-			String jasperFile = "pilot/src/main/resources/jasperTemplate/Sample.jasper";
-			
-			try {
-				compileAndSave(jrxmlFile, jasperFile);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-			InputStream templateStream = JasperReportPdfGenerator.class.getResourceAsStream("/jasperTemplate/Sample.jasper");
+				JasperPrint jasperPrint = null;
+				try {
+					jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+				} catch (JRException e) {
+					e.printStackTrace();
+				}
 
-			Map<String, Object> parameters = new HashMap<>();
-			parameters.put("userDetails", userDetails);
-			parameters.put("fromYear", fromYear);
-			parameters.put("toYear", toYear);
+				try {
+					ByteArrayOutputStream pdfByteArrayOutputStream = new ByteArrayOutputStream();
+					JasperExportManager.exportReportToPdfStream(jasperPrint, pdfByteArrayOutputStream);
 
-			JasperPrint jasperPrint = JasperFillManager.fillReport(templateStream, parameters, new JREmptyDataSource());
-
-			return JasperExportManager.exportReportToPdf(jasperPrint);
+					return ServerResponse.ok().contentType(MediaType.APPLICATION_PDF)
+							.body(BodyInserters.fromDataBuffers(Flux.just(pdfByteArrayOutputStream.toByteArray())
+									.map(DefaultDataBufferFactory.sharedInstance::wrap)));
+				} catch (Exception e) {
+					e.printStackTrace();
+					return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
-	}
-
-	public static void compileAndSave(String jrxmlFilePath, String jasperOutputPath) throws Exception {
-		JasperCompileManager.compileReportToFile(jrxmlFilePath, jasperOutputPath);
-		
 	}
 }

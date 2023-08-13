@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.20.5.final using JasperReports Library version 6.20.5-3efcf2e67f959db3888d79f73dde2dbd7acb4f8e  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Sample" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="2ede405c-1618-47df-8e4d-8ff1f194787c">
+	<parameter name="fromYear" class="java.lang.Integer"/>
+	<parameter name="toYear" class="java.lang.Integer"/>
+	<field name="month" class="java.lang.String"/>
+	<field name="users" class="java.lang.Integer"/>
+	<field name="sessions" class="java.lang.Integer"/>
+	<field name="pageViews" class="java.lang.Integer"/>
+	<variable name="users1" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{users}]]></variableExpression>
+	</variable>
+	<variable name="sessions1" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{sessions}]]></variableExpression>
+	</variable>
+	<variable name="pageViews1" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{pageViews}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="130" splitType="Stretch">
+			<rectangle>
+				<reportElement x="-20" y="-19" width="595" height="58" forecolor="#6A5B9E" backcolor="#6A5B9E" uuid="4865a3de-cf99-4626-8362-7e0425bb0558"/>
+			</rectangle>
+			<staticText>
+				<reportElement mode="Transparent" x="-10" y="-12" width="220" height="40" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="ff6b920e-f3ba-44cf-a4a0-dc54449bfd30"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="22"/>
+				</textElement>
+				<text><![CDATA[Analytics Report]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Transparent" x="0" y="50" width="90" height="20" forecolor="#6A5B9E" backcolor="#FFFFFF" uuid="7a5af49d-6593-4109-8e7b-125220708c62"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Users		:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="80" width="90" height="20" forecolor="#6A5B9E" uuid="954d4eb7-2ef2-44e7-844c-796b8edc03bc"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Sessions	:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="110" width="90" height="20" forecolor="#6A5B9E" uuid="bd748a19-0d50-461f-ab20-458cd7643e59"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial"/>
+				</textElement>
+				<text><![CDATA[Page Views	:]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="90" y="50" width="100" height="19" uuid="ebc989d9-602c-4521-8ce5-3d6225e78c58"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{users1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="80" width="100" height="19" uuid="74bdb0aa-ed8f-45c7-9095-6c69be6b09e6"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{sessions1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="90" y="110" width="100" height="19" uuid="c205b3ea-2463-44d3-91ab-1a673afe2028"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{pageViews1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="290" y="-7" width="243" height="30" forecolor="#FFFFFF" backcolor="#FFFFFF" uuid="023436f8-e44e-43b5-a0c6-a1a34a65a728"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Arial" size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA["From " + $P{fromYear} + " to " + $P{toYear}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<rectangle>
+				<reportElement mode="Opaque" x="-20" y="0" width="595" height="30" forecolor="#F5F5F5" backcolor="#F5F5F5" uuid="255ae7d7-a6a0-4662-8ca4-dd4256a64796"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="0" width="141" height="30" uuid="b573f99b-78a3-4397-9347-3f56d8b595bf">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="8a159a62-75c7-4e49-98cd-4201f74e53af"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Month]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="141" y="0" width="138" height="30" uuid="3d97547c-36c6-4ad0-b933-3e54ffe6ef18">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d3eae40f-8ceb-4a4e-b245-4a3d0bab6cc9"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Users]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="279" y="0" width="138" height="30" uuid="b63a5234-9fc2-4a83-aca1-516ca698c52f">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="f9f438bc-7ad9-48a7-8544-f8a80d8e220d"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[Sessions]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="417" y="0" width="138" height="30" uuid="9e8f9e1f-5283-458c-80e6-34395d3542e5">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="bbff0375-72ba-4ed5-8c9c-05bf7bda253c"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[PageViews]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="5" width="141" height="15" uuid="3ba2877e-947f-4d04-912c-a9032c2b89fa">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="8a159a62-75c7-4e49-98cd-4201f74e53af"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{month}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="141" y="5" width="138" height="15" uuid="c4aeeba7-33f0-4c31-bde7-c2dd73977a86">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d3eae40f-8ceb-4a4e-b245-4a3d0bab6cc9"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{users}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="279" y="5" width="138" height="15" uuid="73160d52-6778-458e-8786-67008df9ee51">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="f9f438bc-7ad9-48a7-8544-f8a80d8e220d"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{sessions}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="417" y="5" width="138" height="15" uuid="b041f48c-c877-474a-8387-41dced1ead82">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="bbff0375-72ba-4ed5-8c9c-05bf7bda253c"/>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{pageViews}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -2,8 +2,15 @@
 <qualifiedTypeNameHistroy>
     <fullyQualifiedTypeName name="org.springframework.http.MediaType"/>
     <fullyQualifiedTypeName name="org.springframework.web.reactive.function.server.RouterFunctions"/>
-    <fullyQualifiedTypeName name="java.util.Map"/>
-    <fullyQualifiedTypeName name="org.springframework.http.HttpStatus"/>
     <fullyQualifiedTypeName name="java.nio.file.Paths"/>
     <fullyQualifiedTypeName name="java.nio.file.Path"/>
+    <fullyQualifiedTypeName name="net.sf.jasperreports.engine.JasperCompileManager"/>
+    <fullyQualifiedTypeName name="java.util.Map"/>
+    <fullyQualifiedTypeName name="net.sf.jasperreports.engine.JasperFillManager"/>
+    <fullyQualifiedTypeName name="net.sf.jasperreports.engine.JasperExportManager"/>
+    <fullyQualifiedTypeName name="java.awt.image.DataBuffer"/>
+    <fullyQualifiedTypeName name="org.springframework.core.io.buffer.DataBuffer"/>
+    <fullyQualifiedTypeName name="org.springframework.http.HttpStatus"/>
+    <fullyQualifiedTypeName name="org.springframework.web.reactive.function.BodyInserters"/>
+    <fullyQualifiedTypeName name="net.sf.jasperreports.engine.JRException"/>
 </qualifiedTypeNameHistroy>
