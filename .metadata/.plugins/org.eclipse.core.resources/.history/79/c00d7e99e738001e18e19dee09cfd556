@@ -1,0 +1,5 @@
+package com.jasper.pilot.projection;
+
+public class UserData {
+
+}

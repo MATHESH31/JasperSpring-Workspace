@@ -1,0 +1,54 @@
+package com.jasper.pilot.handler;
+
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
+
+import com.jasper.pilot.projection.UserData;
+
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+@Service
+public class JasperHandler {
+
+	@Autowired
+	ReactiveMongoTemplate reactiveMongoTemplate;
+	
+	public Mono<ServerResponse> data(ServerRequest request) {
+		Flux<UserData> user = reactiveMongoTemplate.findAll(UserData.class);
+		return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(user,UserData.class);
+	}
+	
+	public Mono<ServerResponse> generateReport(ServerRequest request) {
+		return
+	}
+	
+	public class JasperReportPdfGenerator {
+	    public static byte[] generatePdfFromTemplate(List<UserData> monthlyDataList, String reportTitle) throws JRException {
+	        InputStream templateStream = JasperReportPdfGenerator.class.getResourceAsStream("/path/to/your/template.jasper");
+
+	        Map<String, Object> parameters = new HashMap<>();
+	        parameters.put("monthlyDataList", monthlyDataList);
+	        parameters.put("reportTitle", reportTitle); // Pass the parameter value
+
+	        JasperPrint jasperPrint = JasperFillManager.fillReport(templateStream, parameters, new JREmptyDataSource());
+
+	        return JasperExportManager.exportReportToPdf(jasperPrint);
+	    }
+	}
+
+}
