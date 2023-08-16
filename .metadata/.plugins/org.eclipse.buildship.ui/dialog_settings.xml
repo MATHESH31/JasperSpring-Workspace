@@ -3,6 +3,6 @@
 	<section name="org.eclipse.buildship.ui.wizard.project.creation">
 	</section>
 	<section name="org.eclipse.buildship.ui.wizard.project.import">
-		<item key="project_location" value="D:\JasperSpring Workspace\pilot"/>
+		<item key="project_location" value="D:\JasperSpring-Workspace\pilot"/>
 	</section>
 </section>

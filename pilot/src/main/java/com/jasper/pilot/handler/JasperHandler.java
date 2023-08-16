@@ -1,12 +1,13 @@
 package com.jasper.pilot.handler;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.http.HttpStatus;
@@ -42,39 +43,16 @@ public class JasperHandler {
 	}
 
 	public Mono<ServerResponse> generateReport(ServerRequest request) {
-		Mono<List<UserData>> users = reactiveMongoTemplate.findAll(UserData.class).collectList();
+		Flux<UserData> users = reactiveMongoTemplate.findAll(UserData.class);
 
 		int fromYear = Integer.parseInt(request.queryParam("fromYear").orElse(""));
 		int toYear = Integer.parseInt(request.queryParam("toYear").orElse(""));
 
-//		try {
-//			InputStream reportInputStream = getClass().getResourceAsStream("/jrxmlTemplates/Sample.jrxml");
-//			JasperReport jasperReport = JasperCompileManager.compileReport(reportInputStream);
-//			
-//			JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(users.collectList().block());
-//			
-//			Map<String,Object> parameters = new HashMap<>();
-//			parameters.put("fromYear", fromYear);
-//			parameters.put("toYear", toYear);
-//			parameters.put("dataSource", dataSource);
-//			
-//			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
-//			
-//			FileOutputStream pdfFileOutputStream = new FileOutputStream("/generatedReports/UserDetails.pdf");
-//			JasperExportManager.exportReportToPdfStream(jasperPrint,pdfFileOutputStream);
-//			
-//			pdfFileOutputStream.close();
-//			reportInputStream.close();
-//	
-//			FileSystemResource resource = new FileSystemResource("/generatedReports/UserDetails.pdf");
-//			
-//			return ServerResponse.ok().contentType(MediaType.APPLICATION_PDF).body(BodyInserters.fromResource(resource));
-//		} 
 		try {
 			InputStream reportInputStream = getClass().getResourceAsStream("/jrxmlTemplates/Sample.jrxml");
 			JasperReport jasperReport = JasperCompileManager.compileReport(reportInputStream);
 
-			return users.flatMap(user -> {
+			return users.collectList().flatMap(user -> {
 				JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(user);
 
 				Map<String, Object> parameters = new HashMap<>();
@@ -88,17 +66,25 @@ public class JasperHandler {
 					e.printStackTrace();
 				}
 
+				ByteArrayOutputStream pdfByteArrayOutputStream = new ByteArrayOutputStream();
 				try {
-					ByteArrayOutputStream pdfByteArrayOutputStream = new ByteArrayOutputStream();
 					JasperExportManager.exportReportToPdfStream(jasperPrint, pdfByteArrayOutputStream);
-
-					return ServerResponse.ok().contentType(MediaType.APPLICATION_PDF)
-							.body(BodyInserters.fromDataBuffers(Flux.just(pdfByteArrayOutputStream.toByteArray())
-									.map(DefaultDataBufferFactory.sharedInstance::wrap)));
-				} catch (Exception e) {
+				} catch (JRException e) {
 					e.printStackTrace();
-					return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 				}
+				Flux<DataBuffer> dataBufferFlux = Flux.just(pdfByteArrayOutputStream.toByteArray())
+						.map(bufferFactory::wrap);
+
+				try {
+					pdfByteArrayOutputStream.close();
+					reportInputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				return ServerResponse.ok().contentType(MediaType.APPLICATION_PDF)
+						.body(BodyInserters.fromDataBuffers(dataBufferFlux));
+
 			});
 		} catch (Exception e) {
 			e.printStackTrace();
